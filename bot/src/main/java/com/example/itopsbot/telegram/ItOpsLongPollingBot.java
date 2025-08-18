@@ -48,7 +48,7 @@ public class ItOpsLongPollingBot extends TelegramLongPollingBot {
             case "/status" -> reply(chatId, "ОК: бот жив, метрики на :8081/actuator/prometheus");
             case "/help" -> reply(chatId, "Доступные команды:\n/status — проверить состояние бота\n/help — помощь");
 
-            default -> reply(chatId, "РќРµ Р·РЅР°СЋ С‚Р°РєСѓСЋ РєРѕРјР°РЅРґСѓ. РџРѕРїСЂРѕР±СѓР№ /help");
+            default -> reply(chatId, "Привет! Я CottBot! Команды: /status, /help");
         }
     }
 
