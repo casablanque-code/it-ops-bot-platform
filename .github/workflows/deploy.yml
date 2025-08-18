@@ -30,12 +30,11 @@ jobs:
           SSH_HOST: ${{ secrets.VPS_HOST }}
           SSH_USER: ${{ secrets.VPS_USER }}
           SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
-          APP_DIR: /opt/it-ops-bot/docker
+          APP_DIR: /root/it-ops-bot
         run: |
           set -euo pipefail
           : "${SSH_HOST:?VPS_HOST secret is required}"
           : "${SSH_USER:?VPS_USER secret is required}"
-          # порт по умолчанию 22, если секрет не задан
           PORT="${SSH_PORT:-22}"
 
           # Проверка соединения
@@ -44,17 +43,15 @@ jobs:
           # Деплой
           ssh -o StrictHostKeyChecking=no -p "$PORT" "$SSH_USER@$SSH_HOST" bash -lc "
             set -euo pipefail
-            cd '$APP_DIR' || { echo 'APP_DIR $APP_DIR not found'; exit 1; }
 
-            # Подтянуть свежие образы и поднять сервисы
+            cd '$APP_DIR' || { echo 'APP_DIR $APP_DIR not found'; exit 1; }
+            test -f docker-compose.prod.yml || { echo 'docker-compose.prod.yml not found in $APP_DIR'; exit 1; }
+
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
 
-            # Небольшая уборка старых неиспользуемых слоёв
             docker image prune -f
 
-            # Смоук-тест
-            sleep 2
             echo '--- compose ps ---'
             docker compose -f docker-compose.prod.yml ps
           "
