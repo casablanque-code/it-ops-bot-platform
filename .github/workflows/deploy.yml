@@ -2,35 +2,59 @@ name: Deploy to VPS
 
 on:
   workflow_run:
-    workflows: ["Build & Push Docker image (GHCR)"]
+    workflows: ["Build & Push Docker image (GHCR)"]  # автозапуск после успешной сборки образа
     types: [completed]
-  workflow_dispatch: {}
+  push:
+    branches: ["main"]                                # (опционально) деплой при пуше в main
+    paths-ignore:
+      - "**.md"
+      - ".github/**"
+  workflow_dispatch: {}                                # возможность запустить вручную
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: SSH deploy
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout (не обязателен, но полезен для отладки)
+        uses: actions/checkout@v4
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          key: ${{ secrets.SSH_KEY }}
-          script_stop: true
-          script: |
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Deploy on VPS
+        env:
+          SSH_HOST: ${{ secrets.VPS_HOST }}
+          SSH_USER: ${{ secrets.VPS_USER }}
+          SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
+          APP_DIR: /opt/it-ops-bot/docker
+        run: |
+          set -euo pipefail
+          : "${SSH_HOST:?VPS_HOST secret is required}"
+          : "${SSH_USER:?VPS_USER secret is required}"
+          # порт по умолчанию 22, если секрет не задан
+          PORT="${SSH_PORT:-22}"
+
+          # Проверка соединения
+          ssh -o StrictHostKeyChecking=no -p "$PORT" "$SSH_USER@$SSH_HOST" "echo 'SSH OK on ' \$(hostname) '; user=' \$(whoami)"
+
+          # Деплой
+          ssh -o StrictHostKeyChecking=no -p "$PORT" "$SSH_USER@$SSH_HOST" bash -lc "
             set -euo pipefail
+            cd '$APP_DIR' || { echo 'APP_DIR $APP_DIR not found'; exit 1; }
 
-            APP_DIR="/opt/it-ops-bot/docker"
-            cd "$APP_DIR"
-
-            # тянем свежий образ и перезапускаем
+            # Подтянуть свежие образы и поднять сервисы
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
+
+            # Небольшая уборка старых неиспользуемых слоёв
             docker image prune -f
 
-            # быстрый смоук-тест
+            # Смоук-тест
             sleep 2
+            echo '--- compose ps ---'
             docker compose -f docker-compose.prod.yml ps
+          "
