@@ -2,25 +2,17 @@
 FROM gradle:8.10.0-jdk21 AS build
 WORKDIR /app
 
-# сначала файлы Gradle (лучший кеш)
+# Gradle файлы модуля
 COPY settings.gradle.kts /app/
 COPY build.gradle.kts /app/
-COPY gradle /app/gradle
-COPY gradlew /app/
-COPY gradlew.bat /app/
 
-# исходники модуля
+# исходники
 COPY src /app/src
 
-# сборка bootJar этого модуля
-RUN set -eux; \
-  if [ -x ./gradlew ]; then \
-    ./gradlew clean bootJar -x test --no-daemon --stacktrace; \
-  else \
-    gradle clean bootJar -x test --no-daemon --stacktrace; \
-  fi
+# сборка bootJar (без тестов)
+RUN gradle clean bootJar -x test --no-daemon --stacktrace
 
-# runtime stage
+# runtime
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar /app/app.jar
