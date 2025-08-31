@@ -15,9 +15,14 @@ COPY settings.gradle.kts build.gradle.kts /app/
 COPY src /app/src
 
 # убираем BOM из исходников (на всякий случай)
-RUN find /app/src -type f \( -name '*.java' -o -name '*.yml' -o -name '*.kts' \) -print0 \
-    | xargs -0 sed -i '1s/^\xEF\xBB\xBF//' \
- && gradle clean bootJar -x test --no-daemon
+RUN set -eux; \
+  ROOT="/app/bot/src"; \
+  [ -d "$ROOT" ] || ROOT="/app/src"; \
+  BOM="$(printf '\357\273\277')"; \
+  find "$ROOT" -type f \( -name '*.java' -o -name '*.yml' -o -name '*.kts' \) -print0 \
+  | xargs -0 -r sed -i "1s/^$BOM//" \
+  && gradle clean bootJar -x test --no-daemon
+
 
 
 # runtime stage
