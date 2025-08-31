@@ -1,0 +1,23 @@
+﻿server:
+  port: 8080
+
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+bot:
+  username: ${BOT_USERNAME:it_ops_bot}
+  token: ${TELEGRAM_BOT_TOKEN:}
+
+supabase:
+  url: ${SUPABASE_URL:}
+  anonKey: ${SUPABASE_ANON_KEY:}
+  serviceKey: ${SUPABASE_SERVICE_KEY:}

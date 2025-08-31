@@ -24,6 +24,12 @@ dependencies {
     implementation("org.telegram:telegrambots-spring-boot-starter:6.9.7.1")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    implementation("org.telegram:telegrambots-spring-boot-starter:6.9.7.1")
+
+    // Docker Java client
+    implementation("com.github.docker-java:docker-java:3.3.6")
+    implementation("com.github.docker-java:docker-java-transport-httpclient5:3.3.6")
 }
 
 tasks.withType<Test> {
