@@ -1,26 +1,15 @@
-﻿# build stage
-FROM eclipse-temurin:21-jdk AS build
+﻿FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 
-# Копируем только нужное для лучшего кеша
-COPY settings.gradle.kts /app/
-COPY build.gradle.kts /app/
-COPY gradle /app/gradle
-COPY gradlew /app/
-COPY gradlew.bat /app/
-COPY src /app/src
+COPY gradlew gradlew.bat /app/
+COPY gradle               /app/gradle
+COPY settings.gradle.kts  /app/
+COPY build.gradle.kts     /app/
+COPY src                  /app/src
 
-# Диагностика: покажем, что реально попало в образ
-RUN set -eux; \
-    echo "=== LS /app ==="; ls -la /app; \
-    echo "=== LS /app/src ==="; ls -la /app/src || true; \
-    echo "=== Gradle version via wrapper ==="; ./gradlew --version
-
-# Сборка bootJar с подробным логом
-RUN set -eux; \
+RUN --mount=type=cache,target=/home/gradle/.gradle \
     ./gradlew clean bootJar -x test --no-daemon --stacktrace --info
 
-# runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar /app/app.jar
