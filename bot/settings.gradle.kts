@@ -1,1 +1,1 @@
-﻿rootProject.name = "it-ops-bot"
+rootProject.name = "it-ops-bot"

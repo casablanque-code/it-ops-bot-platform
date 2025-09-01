@@ -1,23 +1,30 @@
-﻿# build stage
-FROM gradle:8.10.0-jdk21 AS build
-WORKDIR /app
-
-# контекст = ./bot, поэтому копируем файлы МОДУЛЯ, без префикса bot/
-COPY settings.gradle.kts /app/
-COPY build.gradle.kts    /app/
-COPY src                 /app/src
-
-RUN --mount=type=cache,target=/home/gradle/.gradle \
-    gradle clean bootJar -x test --no-daemon --stacktrace --info
-
-# runtime
-FROM eclipse-temurin:21-jre-alpine
-WORKDIR /app
-COPY --from=build /app/build/libs/*.jar /app/app.jar
-
-ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:+UseG1GC" \
-    SPRING_PROFILES_ACTIVE=prod \
-    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
-
-EXPOSE 8080 8081
-ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
+﻿# ---------- BUILD STAGE ----------
+    FROM gradle:8.9-jdk21 AS builder
+    WORKDIR /app
+    COPY . /app
+    RUN gradle clean bootJar --no-daemon
+    
+    
+    # ---------- RUNTIME STAGE ----------
+    FROM eclipse-temurin:21-jre
+    ENV TZ=UTC \
+    JAVA_OPTS="" \
+    BOT_USERNAME="change_me" \
+    BOT_TOKEN="change_me" \
+    DOCKER_BIN="docker"
+    
+    
+    # Установим docker-cli, чтобы внутри контейнера можно было выполнять `docker ps`
+    RUN apt-get update && apt-get install -y --no-install-recommends docker.io && rm -rf /var/lib/apt/lists/*
+    
+    
+    WORKDIR /app
+    COPY --from=builder /app/build/libs/*.jar /app/app.jar
+    
+    
+    # Совет: монтируйте /var/run/docker.sock:ro для команды /docker_status
+    # - /var/run/docker.sock:/var/run/docker.sock:ro
+    
+    
+    EXPOSE 8080
+    ENTRYPOINT ["sh", "-lc", "java $JAVA_OPTS -jar /app/app.jar"]

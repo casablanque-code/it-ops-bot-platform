@@ -1,23 +1,21 @@
-﻿server:
-  port: 8080
+spring:
+main:
+banner-mode: "off"
+application:
+name: it-ops-bot
 
-management:
-  server:
-    port: 8081
-  endpoints:
-    web:
-      exposure:
-        include: "health,info,prometheus"
-  endpoint:
-    health:
-      probes:
-        enabled: true
 
+server:
+port: 8080
+
+
+# Читаем из переменных окружения (в CI/VPS храните секреты там)
 bot:
-  username: ${BOT_USERNAME:it_ops_bot}
-  token: ${TELEGRAM_BOT_TOKEN:}
+username: ${BOT_USERNAME:change_me}
+token: ${BOT_TOKEN:change_me}
 
-supabase:
-  url: ${SUPABASE_URL:}
-  anonKey: ${SUPABASE_ANON_KEY:}
-  serviceKey: ${SUPABASE_SERVICE_KEY:}
+
+logging:
+level:
+root: INFO
+com.example.itopsbot: INFO
