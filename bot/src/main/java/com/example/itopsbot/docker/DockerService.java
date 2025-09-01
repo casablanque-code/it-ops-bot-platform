@@ -63,8 +63,8 @@ public class DockerService {
     }
 
     public String formatTable(List<ContainerInfo> list) {
-        final int nameW = 18;
-        final int stateW = 9;
+        final int nameW = 17;
+        final int stateW = 12;
         //final int imageW = 28;
 
         StringBuilder sb = new StringBuilder();
@@ -72,11 +72,11 @@ public class DockerService {
         sb.append(pad("NAME", nameW)).append(pad("STATE", stateW)).append("STATUS\n");
         for (ContainerInfo c : list) {
             String emoji = switch (c.state) {
-                case "running " -> "🟢";
-                case "stoped " -> "🔴";
-                case "paused " -> "⏸";
-                case "restarting " -> "🟡";
-                case "created " -> "⚪";
+                case "running" -> "🟢";
+                case "stoped" -> "🔴";
+                case "paused" -> "⏸";
+                case "restarting" -> "🟡";
+                case "created" -> "⚪";
                 default -> "❔";
             };
             sb.append(pad(escape(c.name), nameW))
