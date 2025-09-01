@@ -10,6 +10,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.api.methods.updates.DeleteWebhook;
+
 
 import java.lang.management.ManagementFactory;
 import java.time.Duration;
@@ -51,6 +53,19 @@ public class ItOpsLongPollingBot extends TelegramLongPollingBot {
             System.err.println("Не удалось выставить команды: " + e.getMessage());
         }
     }
+
+    @Override
+public void clearWebhook() {
+    try {
+        DeleteWebhook req = new DeleteWebhook();
+        // если есть сеттер — можно дропнуть «зависшие» апдейты
+        try { req.setDropPendingUpdates(true); } catch (Throwable ignored) {}
+        execute(req);
+    } catch (Exception e) {
+        System.err.println("Ignore deleteWebhook error: " + e.getMessage());
+        // 404 Not Found/любая ошибка — не критично для long polling
+    }
+}
 
     @Override
     public void onUpdateReceived(Update update) {
