@@ -81,7 +81,7 @@ public void clearWebhook() {
         switch (text) {
             case "/status" -> reply(chatId, statusText());
             case "/help" -> reply(chatId, helpText());
-            case "/docker_status" -> reply(chatId, dockerService.getDockerStatus());
+            case "/docker_status" -> replyHtml(chatId, dockerService.getDockerStatus());
             default -> {
                 if (text.startsWith("/")) {
                     reply(chatId, "Неизвестная команда. Наберите /help");
@@ -113,6 +113,19 @@ public void clearWebhook() {
                 upDays, upHours, upMinutes, used, total, jvm
         );
     }
+
+    private void replyHtml(long chatId, String html) {
+        try {
+            execute(SendMessage.builder()
+                    .chatId(chatId)
+                    .parseMode("HTML")
+                    .text(html)
+                    .build());
+        } catch (TelegramApiException e) {
+            System.err.println("Ошибка отправки HTML: " + e.getMessage());
+        }
+    }
+    
 
     private void reply(long chatId, String text) {
         try {

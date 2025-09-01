@@ -13,6 +13,7 @@ port: 8080
 bot:
 username: ${BOT_USERNAME:change_me}
 token: ${BOT_TOKEN:change_me}
+adminChatId: ${ADMIN_CHAT_ID:}
 
 
 logging:
