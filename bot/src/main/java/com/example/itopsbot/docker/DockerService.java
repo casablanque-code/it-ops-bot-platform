@@ -65,15 +65,15 @@ public class DockerService {
     public String formatTable(List<ContainerInfo> list) {
         final int nameW = 24;
         final int stateW = 9;
-        final int imageW = 28;
+        //final int imageW = 28;
 
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>");
-        sb.append(pad("NAME", nameW)).append(pad("STATE", stateW)).append(pad("IMAGE", imageW)).append("STATUS\n");
+        sb.append(pad("NAME", nameW)).append(pad("STATE", stateW)).append("STATUS\n");
         for (ContainerInfo c : list) {
             String emoji = switch (c.state) {
                 case "running" -> "🟢";
-                case "exited" -> "🔴";
+                case "stoped" -> "🔴";
                 case "paused" -> "⏸";
                 case "restarting" -> "🟡";
                 case "created" -> "⚪";
@@ -81,7 +81,7 @@ public class DockerService {
             };
             sb.append(pad(escape(c.name), nameW))
               .append(pad(emoji + " " + c.state, stateW))
-              .append(pad(escape(trim(c.image, imageW - 1)), imageW))
+              //.append(pad(escape(trim(c.image, imageW - 1)), imageW))
               .append(escape(c.status))
               .append("\n");
         }
@@ -113,12 +113,12 @@ public class DockerService {
         return s + " ".repeat(w - len);
     }
 
-    private static String trim(String s, int w) {
-        if (s == null) return "";
-        int len = s.codePointCount(0, s.length());
-        if (len <= w) return s;
-        return s.substring(0, s.offsetByCodePoints(0, w - 1)) + "…";
-    }
+    // private static String trim(String s, int w) {
+    //     if (s == null) return "";
+    //     int len = s.codePointCount(0, s.length());
+    //     if (len <= w) return s;
+    //     return s.substring(0, s.offsetByCodePoints(0, w - 1)) + "…";
+    // }
 
     private static String escape(String s) {
         if (s == null) return "";
