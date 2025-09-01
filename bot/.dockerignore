@@ -1,7 +1,12 @@
-﻿.build/
+﻿# IDE/мусор
 .gradle/
-**/node_modules/
 **/.idea/
 **/.vscode/
 **/*.iml
 out/
+**/node_modules/
+
+# игнорим всё из build, кроме артефакта
+/build/*
+!/build/libs/
+!/build/libs/*.jar

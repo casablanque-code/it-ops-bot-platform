@@ -1,0 +1,9 @@
+# Java/Gradle
+bot/build/
+bot/.gradle/
+
+# IDE
+**/.idea/
+**/.vscode/
+**/*.iml
+out/
