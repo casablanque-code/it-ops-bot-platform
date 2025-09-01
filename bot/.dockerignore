@@ -1,6 +1,5 @@
-﻿/build/*
-!/build/libs/
-!/build/libs/*.jar
+﻿.build/
+.gradle/
 **/node_modules/
 **/.idea/
 **/.vscode/
